@@ -1,0 +1,40 @@
+.floatLeftPicture{
+	float: left;border-radius: 20px;margin-top: 5px;border:1.5px solid rgb(54,116,248);
+}
+.listedBlock{
+	width: 90%; height: 40px;margin: 10px;position: relative;float: bottom; color: darkblue; background: rgb(245,245,245); right: 0;text-decoration: none;
+}
+.listedBlock a{text-decoration: none;}
+info-box .title{
+	font-size: 8pt; color: rgb(52,116,247); margin-left: 5px; line-height: 0px; font-weight: bold;
+}
+info-box .numbers{
+	font-size: 9pt; color: gray; margin-left: 10px; line-height: 0px;margin-right: 5px;
+}
+info-box .lowerText{
+	font-size: 7pt; color: grey; margin-left: 0px; line-height: 0px;
+}
+.listedBlock .lowerContainer{
+
+}
+
+info-box #topBar{
+	width: 100%; height: 30px;position: relative; background: rgb(13,76,169);
+}
+info-box #topBar span{
+	font-size: 8pt; color: white; margin-left: 15px; line-height: 29px; font-weight: bold;
+}
+info-box #inside{
+	width: 100%; height: 50px;position: relative; background: rgb(255,255,255);
+}
+
+info-box{
+	width: 215px; height: 400px;position: fixed; background: rgb(255,255,255); right: 0; top: 150px;border-radius: 3px;
+}
+
+#inside select{
+	width: 190px;
+	height: 30px;
+	margin-top: 10px;margin-bottom: 10px;
+	margin-left: 12.5px;
+}

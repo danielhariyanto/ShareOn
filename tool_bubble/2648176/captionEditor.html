@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Caption Editor</title>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  	<link rel="stylesheet" href="/resources/demos/style.css">
+	<style>
+		body{
+			background: white;
+			height: 100%; margin: 0;
+			text-align: center;
+			margin:15px;
+		}
+		h1{
+			margin:auto;
+		}
+		#box {
+			background: white;
+			position: relative;
+			margin: 15px auto;
+			object-fit: scale-down;
+            width: 300px;
+            height: 300px;
+        }
+
+		#textbox{
+			background: white;
+			width: 500px;
+			height: 600px;
+			position: relative;
+			margin: 10px;
+			float: right;
+		}
+
+		.upload-image-preview img{
+    		max-width: 780px;
+    		height: auto;
+    		max-height: 500px;
+    	}
+
+    	.specialBox {
+    		height: 50px;
+    		border: 1px dotted gray;
+    		position: absolute;
+    		z-index: 1;
+    		top: 0;
+    		left: 0;
+            border-radius: 20px;
+    	}
+
+        .specialBox.size {
+            border: 2px dotted black;
+        }
+
+		.newtextBox {
+			margin-right: 20px;
+			padding:4px;
+			border: 1px dotted gray;
+            border-radius: 25px;
+		}
+
+		img {
+			max-height: 350px;
+			max-width: 350px;
+			position: absolute;
+			left: 0;
+			top: 0;
+            z-index: 0;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type='text/javascript' src='file_upload.js'></script>
+<script src="jquery-ui.min.js"></script>
+
+</head>
+<body>
+	<h1>Caption Editor</h1>
+    <input id="image" type="file" name="file"  accept="image/*" value="Upload Image"/>
+    <button onclick="removeImage()" name="remover" disabled>Remove Image</button>
+    <button onclick="addBox()" name="addText" disabled="">Add Textbox</button>
+    <input id='increase' type="button" value="Increase Font" disabled="" />
+    <input id='decrease' type="button" value="Decrease Font" disabled="" />
+	<div id="box">
+	</div>
+
+    <div id="content" content="{}"></div>
+    <div id="links" content="[]"></div>
+	<script>
+		window.onmessage = (e)=>{
+			var data=e.data;
+      $('body').attr("c", JSON.stringify(data.content.captions));
+      $('#content').attr("content", JSON.stringify(data.content));
+      $('#box').append('<img onload="resizeTwo();" src="'+data['content']['image']+'"/>');
+    }
+		$("#image").on("change",function(){
+			$(this).attr("name","thth");
+			var file= $(this).val();
+            var exts = ['jpeg','gif','bmp','png','jpg'];
+            if ( file ) {
+                var get_ext = file.split('.');
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+                    $("#image").upload('/writers/uploadfile.php',function(data){
+                    	$('#box').empty();
+                    	$('#box').append('<img onload="resize();" src="'+data+'"/>');
+                    	var json = {};
+                        json.image = data;
+                        $('#content').attr("content", JSON.stringify(json));
+                    },$(".prog"));
+                } else {
+                    $(this).val('');
+                }
+            }
+			});
+
+		function resize(){
+			$('#box').width($("img").width());
+			$('#box').height($("img").height());
+            $('button').prop('disabled', false);
+            $('input').prop('disabled', false);
+            $('#links').attr("content", "['"+$('img').attr("src")+"']");
+		}
+
+        function resizeTwo(){
+            $('#box').width($("img").width());
+            $('#box').height($("img").height());
+            $('button').prop('disabled', false);
+            $('input').prop('disabled', false);
+            $('#links').attr("content", "['"+$('img').attr("src")+"']");
+            var c = JSON.parse($('body').attr("c"));
+            for (var j = 0; j < c.length; j++){
+                    $('#box').append('<div class="specialBox" style="left:'+c[j]['left']+'; top:'+c[j]['top']+'"><div class="newtextBox" contenteditable="True" spellcheck="false">'+c[j]['text']+'</div><button onclick="removeBox()" class="remove">X</button></div>');
+                    $('.newtextBox').last().css("font-size", c[j]['size']+"px");
+                    var json = JSON.parse($('#content').attr("content"));
+                    if (typeof json.captions != "undefined") {
+                        var o={'left' : c[j]['left'], 'top' : c[j]['top'], 'text' : c[j]['text'], 'size': c[j]['size']};
+                        var t=json.captions;
+                        t.push(o);
+                        json.captions = t;
+                    } else {
+                        json.captions = [{'left' : c[j]['left'], 'top' : c[j]['top'], 'text' : c[j]['text'], 'size': c[j]['size']}];
+                    }
+                    $('#content').attr("content", JSON.stringify(json));
+                    var i = 0;
+                    $('.specialBox').each(function() {
+                        $(this).attr('i', i);
+                        i++;
+                    });
+                    $('.specialBox').draggable({cancel:".newtextBox", containment: "#box", drag: function(){
+                        var json = JSON.parse($('#content').attr("content"));
+                        var temp = json.captions;
+                        var current = $(this).attr('i');
+                        temp[current]['left'] = $(this).css('left');
+                        temp[current]['top'] = $(this).css('top');
+                        json.captions = temp;
+                        $('#content').attr("content", JSON.stringify(json));
+                    }});
+                }
+        }
+		/*$("input[name=file]").change(function () {
+    		if (this.files && this.files[0]) {
+       			var reader = new FileReader();
+
+        		reader.onload = function (e) {
+            		var img = $('<img>').attr('src', e.target.result);
+            		$('.upload-image-preview').html(img);
+        		};
+
+        		reader.readAsDataURL(this.files[0]);
+    		}
+		});*/
+
+		function removeImage() {
+			$('img').remove();
+            $('button').prop('disabled', true);
+            $('#increase').prop('disabled', true);
+            $('#decrease').prop('disabled', true);
+            $('#box').width(0);
+            $('.specialBox').remove();
+            $('#image').val("");
+		}
+
+		function addBox() {
+			$('#box').append('<div class="specialBox"><div class="newtextBox" contenteditable="True" spellcheck="false">Something</div><button onclick="removeBox()" class="remove">X</button></div>');
+            //captionNum++;
+            var json = JSON.parse($('#content').attr("content"));
+            if (typeof json.captions != "undefined") {
+                var o={'left' : 0, 'top' : 0, 'text' : "Something", 'size': "16"};
+                var t=json.captions;
+                t.push(o);
+                json.captions = t;
+            } else {
+                json.captions = [{'left' : 0, 'top' : 0, 'text' : "Something", 'size': "16"}];
+            }
+            $('#content').attr("content", JSON.stringify(json));
+            var i = 0;
+            $('.specialBox').each(function() {
+                $(this).attr('i', i);
+                i++;
+            });
+            $('.specialBox').draggable({cancel:".newtextBox", containment: "#box", drag: function(){
+                var json = JSON.parse($('#content').attr("content"));
+                var temp = json.captions;
+                var current = $(this).attr('i');
+                temp[current]['left'] = $(this).css('left');
+                temp[current]['top'] = $(this).css('top');
+                json.captions = temp;
+                $('#content').attr("content", JSON.stringify(json));
+            }});
+		}
+
+		$(document).on("click", '.remove', function() {
+            var json = JSON.parse($('#content').attr("content"));
+            var temp = json.captions;
+            i = $(this).parent().attr("i");
+            var t=temp.slice(0,i); //["dog", "cat", "bird"]
+            if(i+1<temp.length){
+                var s=temp.slice(i+1,temp.length);
+                t=t.concat(s);
+            }
+            json.captions = t;
+            $('#content').attr("content", JSON.stringify(json));
+			$(this).parent().remove();
+            var i = 0;
+            $('.specialBox').each(function() {
+                $(this).attr('i', i);
+                i++;
+            });
+		});
+
+		$('.newtextBox').ready(function(){
+        var th = $(this);
+  		$('#decrease').click(function(){
+    		var i = $('.specialBox.size').attr("i");
+            var json = JSON.parse($('#content').attr("content"));
+            var temp = json.captions;
+            temp[i]['size'] = parseInt(temp[i]['size'])-2;
+            $('#content').attr("content", JSON.stringify(json));
+            $('.specialBox.size .newtextBox').css("font-size", temp[i]['size']);
+  		});
+
+
+  		$('#increase').click(function(){
+            var i = $('.specialBox.size').attr("i");
+            var json = JSON.parse($('#content').attr("content"));
+            var temp = json.captions;
+            temp[i]['size'] = parseInt(temp[i]['size'])+2;
+            $('#content').attr("content", JSON.stringify(json));
+    		$('.specialBox.size .newtextBox').css("font-size", temp[i]['size']);
+  		});
+
+  		function resetFont(){
+    		$("font[size=1]").removeAttr("size").css("font-size", fontSize + "px");
+  			}
+		});
+
+        $(document).on("keydown", ".newtextBox", function(){
+            var th = $(this);
+            setTimeout(function(){
+                var json = JSON.parse($('#content').attr("content"));
+                var temp = json.captions;
+                var current = parseInt(th.parent().attr('i'));
+                temp[current]['text'] = th.text();
+                $('#content').attr("content", JSON.stringify(json));
+            }, 10);
+            });
+
+        $(document).on("click", ".specialBox", function(){
+            $('.specialBox').removeClass("size");
+            $(this).addClass("size");
+        });
+	</script>
+</body>
+</html>

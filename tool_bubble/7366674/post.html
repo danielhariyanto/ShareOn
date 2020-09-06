@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<title>Timer</title>
+		<link href="style.css" type="text/css" rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&display=swap"
+			rel="stylesheet"
+		/>
+		<link href="jquery.datetimepicker.min.css" rel="stylesheet" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="jquery.datetimepicker.full.js"></script>
+	</head>
+
+	<body>
+		<div id="disp_container">
+			<div id="postTitle"></div>
+			<br />
+			<div>
+				<h2>
+					<p id="timeLeft"></p>
+				</h2>
+			</div>
+		</div>
+		<div id="content" content="{}"></div>
+
+		<script>
+			window.onmessage = (e)=>{
+				var x =e.data.content;
+				var title = x.title;
+				var targetDate = new Date(x.time).getTime();
+				var interval = setInterval(function() {
+					var presentDate = new Date().getTime();
+					var timeDifference = targetDate - presentDate;
+					var days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+					var hrs = Math.floor(
+						(timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+					);
+					var mins = Math.floor(
+						(timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+					);
+					var secs = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+					document.getElementById("timeLeft").innerHTML =
+						title +
+						"<br>" +
+						days +
+						"d:" +
+						hrs +
+						"h:" +
+						mins +
+						"m:" +
+						secs +
+						"s";
+				});
+			}
+
+			$("input").on("change", function() {
+				var title = $("#title").val();
+			});
+		</script>
+	</body>
+</html>

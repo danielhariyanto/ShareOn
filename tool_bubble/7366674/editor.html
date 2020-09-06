@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Timer</title>
+	<link href="style.css" type="text/css" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&display=swap" rel="stylesheet" />
+	<link href="jquery.datetimepicker.min.css" rel="stylesheet">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="jquery.datetimepicker.full.js"></script>
+</head>
+
+<body>
+	<label for "title">Enter title here: </label>
+	<input type="text" onchange="changer();" name="title" id="title"><br>
+	<label for "targetDate">Days till: </label>
+	<input onchange="changer();" name="targetDate" id="targetDate"><br>
+	<div class="block"></div>
+	<div id="content" content="{}"></div>
+	<script>
+		$("#targetDate").datetimepicker();
+	
+		$("input").on("change", function() {
+			var json = JSON.parse($("#content").attr("content"));
+			json.title = $("#title").val();
+			json.time = $("#targetDate").val();
+			$("#content").attr('content', JSON.stringify(json));
+		});
+	</script>
+</body>
+
+</html>

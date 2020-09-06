@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="file_upload.js"></script>
+<script src="jquery-ui.min.js"></script>
+	<title>Caption Editor</title>
+	<style>
+		body {
+			background: #EB8A67;
+			height:100%;margin:0;
+		}
+		#caption{
+			margin-bottom:50px;
+		}
+		.box {
+			border: 15px;
+			background: #F4D0C3;
+			bottom: 15px;
+			max-width: 100%;
+			max-height: 100%;
+			min-height:300px;
+			position: relative;
+		}
+		.container {
+			border: 1px solid #ccc;
+  			border-radius: 4px;
+  			background: white;
+  			position: absolute;top:0;left:0;
+  			height: 45px;
+  			width: 180px;
+  			padding: 5px;
+  			text-align: center;
+  			font-family: Impact, Charcoal, sans-serif;
+  			margin: auto;
+  			font-size: 22pt;
+		}
+		input[type=text], select {
+  		width: 80%;
+  		padding: 10px 10px;
+  		margin: auto;
+  		display: inline-block;
+  		border: 1px solid #ccc;
+  		border-radius: 4px;
+  		bottom: 50%;
+		}
+		#file{
+			height:100%;position:absolute;width:100%;opacity: 100%;
+		}
+		button{
+			display:none;margin-top:-20px;margin-bottom:50px;
+		}
+		button.enable{
+			display:block;
+		}
+		.box img[src='']{
+			opacity:0;
+		}
+		.box img{
+			opacity:1;
+			max-width:100%;max-height: 100%;margin: 0;
+		}
+		.box{
+			position:relative;
+		}
+	</style>
+</head>
+<body>
+
+	<input type="text" id="caption" placeholder="Edit your caption"/><button id="remover">remove image</button><button id="adder">add caption</button>
+	
+	<div class="box">
+		<input type="file" name="file" id="file"/>
+			<div class="box"><img src="" /></div>
+			<div id="filetext">please choose a file to upload</div>
+	</div>
+	<div id="content" content=""></div>
+	<script>
+	var count=1;
+	$("#caption").on("change",function(){
+		var json={};
+    	if($("#content").attr('content')!="")
+    	json=JSON.parse($("#content").attr('content'));
+    	json.caption=$(this).val();
+    	$("#content").attr('content',JSON.stringify(json));
+	});
+		$("#file").on("change",function(){
+			var file= $(this).val();
+            var exts = ['jpeg','gif','bmp','png','jpg'];
+            if ( file ) {
+                var get_ext = file.split('.');
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+                    $("#file").upload('http://localhost/ShareOn/writers/uploadfile.php',function(data){
+                    	alert(data);
+                    	var json={};
+                    	if($("#content").attr('content')!="")
+                    	json=JSON.parse($("#content").attr('content'));
+                    	json.image=data;
+                    	$("#content").attr('content',JSON.stringify(json));
+                    	$(".box img").attr("src",data);
+                    	$("button").addClass("enable");
+                    	$("#file").prop('disabled', true);
+                    },$(".prog"));
+                } else {
+                    $(this).val('');
+                }
+            }
+		});
+		$("#remover").on("click",function(){
+			var json=JSON.parse($("#content").attr('content'));
+			json.image='';
+        	$("#content").attr('content',JSON.stringify(json));
+        	$(".box img").attr("src",'');
+        	$("button").removeClass("enable");
+        	$("#file").prop('disabled', false);
+		});
+		$("#adder").on("click",function(){
+			var json=JSON.parse($("#content").attr('content'));
+			
+			$(".box .containment").append('<div class="container" key="'+count+'"><input type="text" placeholder="Write something..."></div>');
+			$(".container[key="+count+"]").draggable({ containment: "parent",drag:function(){
+				var j
+			} });
+			json['container'+count]["style"]=$(".container[key="+count+"]").attr("style");
+			count++;
+        	$("#content").attr('content',JSON.stringify(json));
+		});
+		$(document).on("change",".container input",function(){
+			var json=JSON.parse($("#content").attr('content'));
+    	json["container"+$(this).attr("key")]["style"]=$(this).attr("style");
+    	$("#content").attr('content',JSON.stringify(json));
+		});
+		$.get("json.txt",function(d){
+			var j=JSON.parse(d);
+			console.log(j.content);
+		});
+	</script>
+</body>
+</html>

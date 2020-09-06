@@ -1,0 +1,8 @@
+textarea{
+	background:white;width:90%;height: 100px;border: 1px solid rgb(200,200,200);
+	margin-left: 5%;margin-top: 10px;resize:none;font-size:13pt;
+	border-radius:8px;
+}
+textarea:focus{
+	border: 1px solid rgb(40,40,40);outline: none !important;
+}

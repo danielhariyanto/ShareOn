@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html style="height: 100%;" lang="en-US">
+
+<head>
+    <title>TeamBuilder 0.1</title>
+    <meta charset="utf-8" />
+    <link href="./style_editor.css" rel="stylesheet" />
+    <!-- load jquery -->
+    <script type="text/javascript" src="src/j.js"></script>
+    <script type="text/javascript" src="file_upload.js"></script>
+</head>
+
+<body>
+    <div id="content" content='{"title": "","subtitle": "","size": "5","players": {"P1": {"name": "","img": ""},"P2": {"name": "","img": ""},"P3": {"name": "","img": ""},"P4": {"name": "","img": ""},"P5": {"name": "","img": ""}}}' style="visibility: hidden;"></div>
+    <div id="table" class="table">
+        <h3>
+            <input id="subtitle" type="text" name="subtitle" placeholder="Set the post subtitle!" onchange="updText(this, 'subtitle')">
+            <select id="teamsize" name="players">
+                <option value="5">5</option>
+                <option value="3">3</option>
+            </select>
+        </h3>
+        <h1 style="margin: 5px;">
+            <input id="title" type="text" name="title" placeholder="Set the post title!" onchange="updText(this, 'title')">
+        </h1>
+
+        <div id="rack">
+            <div id="P4" class="card card_L">
+                <div id="photopicker4" class="photopicker">
+                    <img id="pimg4" class="card_portrait photoUpInstr" alt="Click here to upload Player 4's portrait." />
+                    <input id="pinput4" class="fileselector" name="file" type="file" accept="image/*">
+                </div>
+                <div class="card_text">
+                    <p class="card_nameplate">
+                        <input id="p4name" type="text" name="p4name" placeholder="Player 4's name" onchange="updPlayerName(this, 'P4')">
+                    </p>
+                </div>
+            </div>
+            <div id="P2" class="card card_L">
+                <div id="photopicker2" class="photopicker">
+                    <img id="pimg2" class="card_portrait photoUpInstr" alt="Click here to upload Player 2's portrait." />
+                    <input id="pinput2" class="fileselector" name="file" type="file" accept="image/*">
+                </div>
+                <div class="card_text">
+                    <p class="card_nameplate">
+                        <input id="p2name" type="text" name="p2name" placeholder="Player 2's name" onchange="updPlayerName(this, 'P2')">
+                    </p>
+                </div>
+            </div>
+            <div id="P1" class="card card_C">
+                <div id="photopicker1" class="photopicker">
+                    <img id="pimg1" class="card_portrait photoUpInstr" alt="Click here to upload Player 1's portrait." />
+                    <input id="pinput1" class="fileselector" name="file" type="file" accept="image/*">
+                </div>
+                <div class="card_text">
+                    <p class="card_nameplate">
+                        <input id="p1name" type="text" name="p1name" placeholder="Player 1's name" onchange="updPlayerName(this, 'P1')">
+                    </p>
+                </div>
+            </div>
+            <div id="P3" class="card card_R">
+                <div id="photopicker3" class="photopicker">
+                    <img id="pimg3" class="card_portrait photoUpInstr" alt="Click here to upload Player 3's portrait." />
+                    <input id="pinput3" class="fileselector" name="file" type="file" accept="image/*">
+                </div>
+                <div class="card_text">
+                    <p class="card_nameplate">
+                        <input id="p3name" type="text" name="p3name" placeholder="Player 3's name" onchange="updPlayerName(this, 'P3')">
+                    </p>
+                </div>
+            </div>
+            <div id="P5" class="card card_R">
+                <div id="photopicker5" class="photopicker">
+                    <img id="pimg5" class="card_portrait photoUpInstr" alt="Click here to upload Player 5's portrait." />
+                    <input id="pinput5" class="fileselector" name="file" type="file" accept="image/*">
+                </div>
+                <div class="card_text">
+                    <p class="card_nameplate">
+                        <input id="p5name" type="text" name="p5name" placeholder="Player 5's name" onchange="updPlayerName(this, 'P5')">
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // script for Editor
+        window.onmessage = (e)=>{
+    				var json=e.data;
+                // P1, P2, P3, P4, P5, title, size, subtitle, images and names
+                $("#title").attr("value", json.content.title);
+                $("#subtitle").attr("value", json.content.subtitle);
+                for (var i = 1; i <= 5; i++) {
+                    var pid = "P" + i;
+                    $("#" + pid + " .card_portrait").attr("src", json.content.players[pid].img);
+                    $("#" + pid + " .card_nameplate").text(json.content.players[pid].name);
+                }
+                if (json.content.size == "3") {
+                    $("#P4").remove();
+                    $("#P5").remove();
+                    $("#P1").css("width", "33%");
+                    $("#P2").css("width", "33%");
+                    $("#P3").css("width", "33%");
+                }
+            }
+
+
+
+        function updText(caller, jsonTargetString) {
+            var jsonRaw = JSON.parse(document.getElementById('content').getAttribute('content'));
+            jsonRaw[jsonTargetString] = caller.value.replace(/"/g, '&quot;').replace(/'/g, "&apos;");
+            document.getElementById('content').setAttribute('content', JSON.stringify(jsonRaw));
+        }
+
+        function updPlayerName(caller, jsonTargetString) {
+            var jsonRaw = JSON.parse(document.getElementById('content').getAttribute('content'));
+            jsonRaw.players[jsonTargetString].name = caller.value.replace(/"/g, '&quot;').replace(/'/g, "&apos;");
+            document.getElementById('content').setAttribute('content', JSON.stringify(jsonRaw));
+        }
+
+        // Detect a photo upload
+        $('.photopicker input').on('change', function() {
+            if ($(this).val()) {
+                var t = $(this); //workaround
+                // The location of the uploaded image is in 'data'.
+                $(this).upload('/writers/uploadfile.php', function(data) {
+                    t.parent().find("img").attr("src", data);
+                    var p_id = t.parent().parent().attr('id');
+                    var json = JSON.parse($("#content").attr('content'));
+                    json.players[p_id].img = data;
+                    $("#content").attr('content', JSON.stringify(json));
+                }, $(".prog"));
+            }
+        });
+
+        // Detect change in team size
+        $('#teamsize').on('change', function() {
+            if ($(this).val() == "5") {
+                $('#P4').css("visibility", "visible");
+                $('#P5').css("visibility", "visible");
+                var json = JSON.parse($("#content").attr('content'));
+                json.size = "5";
+                $("#content").attr('content', JSON.stringify(json));
+            } else {
+                $('#P4').css("visibility", "hidden");
+                $('#P5').css("visibility", "hidden");
+                var json = JSON.parse($("#content").attr('content'));
+                json.size = "3";
+                $("#content").attr('content', JSON.stringify(json));
+            }
+        });
+    </script>
+</body>
+
+</html>

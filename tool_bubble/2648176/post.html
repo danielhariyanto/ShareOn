@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Caption Editor</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <style>
+        body{
+            background: white;
+            height: 100%; margin: 0;
+            text-align: center;
+            margin:15px;
+        }
+        h1{
+            margin:auto;
+        }
+        #box {
+            background: white;
+            position: relative;
+            margin: 15px auto;
+            object-fit: scale-down;
+            width: 350px;
+            height: 350px;
+        }
+
+
+        img {
+            max-height: 350px;
+            max-width: 350px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        div {
+            position: absolute;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type='text/javascript' src='file_upload.js'></script>
+<script src="jquery-ui.min.js"></script>
+
+</head>
+<body>
+
+    <div id="box">
+    </div>
+    <script>
+    window.onmessage = (e)=>{
+      var data=e.data;
+            $('#box').append('<img onload="resize();" src="'+data['content']['image']+'"/>');
+            var c = data.content.captions;
+            for (var i = 0; i < c.length; i++){
+                $('#box').append("<div style='left:"+c[i]['left']+"; top:"+c[i]['top']+"; font-size:"+c[i]['size']+"px'>"+c[i]['text']+"</div>");
+            }
+        }
+
+        function resize(){
+            $('#box').width($("img").width());
+            $('#box').height($("img").height());
+        }
+
+    </script>
+</body>
+</html>

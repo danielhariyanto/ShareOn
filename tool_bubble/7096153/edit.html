@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="file_upload.js"></script>
+<style>
+.page {
+background-color: black;
+color: white;
+margin: 20px;
+padding: 20px;
+}
+.button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+</style>
+</head>
+<body style="text-align:center;">
+
+<!--PDF-->
+<button id="upload-dialog" class="button" >Choose PDF</button>
+<br></br>
+<input type="file" name="file" id="pdf-file" accept="application/pdf"  style="display:none"/>
+<div id="pdf-loader" style="display:none"></div>
+<canvas id="pdf-preview" width="500" style="display:none"></canvas>
+
+<div id="pdf-meta" style="display:none" >
+    <div id="pdf-buttons">
+        <button id="pdf-prev" class="button">Previous</button>
+        <button id="pdf-next" class="button">Next</button>
+    </div>
+    <span id="page-count-container" >Page <span id="pdf-current-page"></span> of <span id="pdf-total-pages"></span></span>
+</div>
+<div id="content"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
+<script>
+// will hold the PDF handle returned by PDF.JS API
+var _PDF_DOC;
+// PDF.JS renders PDF in a <canvas> element
+var _CANVAS = document.querySelector('#pdf-preview');
+// will hold object url of chosen PDF
+var _OBJECT_URL;
+//buttons
+var _CURRENT_PAGE, _TOTAL_PAGES, _PAGE_RENDERING_IN_PROGRESS = 0;
+// load the PDF
+function showPDF(pdf_url) {
+    pdfjsLib.getDocument({ url: pdf_url }).then(function(pdf_doc) {
+        _PDF_DOC = pdf_doc;
+        //console.log(_PDF_DOC);
+        // show the first page of PDF
+        showPage(1);
+        // destroy previous object url
+        URL.revokeObjectURL(_OBJECT_URL);
+        // total pages in pdf
+        _TOTAL_PAGES = _PDF_DOC.numPages;
+        // total pages in pdf
+        document.querySelector("#pdf-total-pages").innerHTML = _TOTAL_PAGES;
+    }).catch(function(error) {
+        // error reason
+        alert(error.message);
+    });;
+}
+
+// show page of PDF
+function showPage(page_no) {
+    _PAGE_RENDERING_IN_PROGRESS = 1;
+    _CURRENT_PAGE = page_no;
+    // disable Previous & Next buttons while page is being loaded
+    document.querySelector("#pdf-next").disabled = true;
+    document.querySelector("#pdf-prev").disabled = true;
+    // update current page
+    document.querySelector("#pdf-current-page").innerHTML = page_no;
+
+    _PDF_DOC.getPage(page_no).then(function(page) {
+        // set the scale of viewport
+        var scale_required = _CANVAS.width / page.getViewport(1).width;
+        // get viewport of the page at required scale
+        var viewport = page.getViewport(scale_required);
+        // set canvas height
+        _CANVAS.height = viewport.height;
+
+        var renderContext = {
+            canvasContext: _CANVAS.getContext('2d'),
+            viewport: viewport
+        };
+
+        // render the page contents in the canvas
+        page.render(renderContext).then(function() {
+            document.querySelector("#pdf-preview").style.display = 'inline-block';
+            document.querySelector("#pdf-loader").style.display = 'none';
+        });
+    });
+
+    _PAGE_RENDERING_IN_PROGRESS = 0;
+    // re-enable Previous & Next buttons
+    document.querySelector("#pdf-next").disabled = false;
+    document.querySelector("#pdf-prev").disabled = false;
+}
+
+/* showing upload file dialog */
+document.querySelector("#upload-dialog").addEventListener('click', function() {
+    document.querySelector("#pdf-file").click();
+});
+
+// click on the "Previous" page button
+document.querySelector("#pdf-prev").addEventListener('click', function() {
+    if(_CURRENT_PAGE != 1)
+        showPage(--_CURRENT_PAGE);
+});
+// click on the "Next" page button
+document.querySelector("#pdf-next").addEventListener('click', function() {
+    if(_CURRENT_PAGE != _TOTAL_PAGES)
+        showPage(++_CURRENT_PAGE);
+});
+
+/* when users selects a file */
+document.querySelector("#pdf-file").addEventListener('change', function() {
+    // user selected PDF
+    var file = this.files[0];
+
+    // allowed MIME types
+    var mime_types = [ 'application/pdf' ];
+
+    // validate whether PDF
+    if(mime_types.indexOf(file.type) == -1) {
+        alert('Error : Incorrect file type');
+        return;
+    }
+
+    // validate file size
+    if(file.size > 10*1024*1024) {
+        alert('Error : Exceeded size 10MB');
+        return;
+    }
+
+    // validation is successful
+    // hide upload dialog
+    //document.querySelector("#upload-dialog").style.display = 'none';
+    document.querySelector("#upload-dialog").innerHTML = 'Replace PDF';
+    // show the PDF preview loader
+    document.querySelector("#pdf-loader").style.display = 'inline-block';
+    // show buttons
+    document.querySelector("#pdf-meta").style.display = "block";
+    // object url of PDF
+    _OBJECT_URL = URL.createObjectURL(file);
+    // send the object url of the pdf to the PDF preview function
+    showPDF(_OBJECT_URL);
+});
+// upload your file and alert its name assuming your input file has an id of file
+$("#pdf-file").on("change",function(){
+      var file= $(this).val(); //value of file
+            var exts = ['pdf'];
+            if ( file ) {
+                var get_ext = file.split('.'); //split name
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+                    $("#pdf-file").upload('/writers/uploadfile.php',function(data){ //uploads file in a pdf post
+                      var url = {"url":data}
+                      $("#content").attr("content",JSON.stringify(url));
+                    },$(".prog")); //get request
+                } else {
+                    $(this).val('');
+                }
+            }
+      });
+</script>
+</body>
+
+</html>

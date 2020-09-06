@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<style>
+			body{
+				color: rgb(100,104,108); font: 400 1em/1.38 Helvetica;
+			}
+		</style>
+	</head>
+	<body>
+		<p style='word-break:break-all;font-size:30pt;width:100%;text-align:center;font-weight:bold;unicode-bidi: embed;'></p>
+	<p style='width:90%;text-align:justify;font-size:14pt;margin-left:5%;position:relative;unicode-bidi: embed;'></p><br>
+		<script>
+      window.onmessage = (e)=>{
+        var d=e.data;
+        if(d.content.title!=undefined)
+        $("p").first().append(d.content.title);
+				var get_ext = d.content.video.split('.');
+				get_ext = get_ext.reverse()[0].toLowerCase();
+				$("p").first().after(`<video style="width:100%;margin-top:10px;left:0px;background:black;" controls="">
+   <source src="${d.content.video}" type="video/${get_ext}">
+</video>`);
+        if(d.content.image!=undefined)
+        $("video").attr("poster",d.content.image);
+        if(d.content.description!=undefined)
+        $("p").last().append(d.content.description);
+      }
+		</script>
+	</body>
+</html>

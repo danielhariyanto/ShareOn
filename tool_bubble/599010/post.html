@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<script>
+			function changer(){
+				$("#content").attr('content','{"text":"'+$("textarea").val().replace(/\n\r?/g, '<br />')+'"}');
+			}
+		</script>
+		<style>
+			.pic{
+				width:150px;height:150px;left:10px;position:relative;
+			}
+			img{
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body style="background: lightblue;">
+		<p style='word-break:break-all;font-size:25pt;width:100%;text-align:center;font-weight:bold;unicode-bidi: embed; margin-bottom: -10px;margin-top:0px;'></p>
+	<p style='width:90%;text-align:justify;font-size:12pt;position:relative;unicode-bidi: embed;float: left;'>
+		</p><br><br>
+		<script>
+    window.onmessage = (e)=>{
+      var j=e.data;
+      $("p").first().append(j.content.title);
+      if(j.content.picture!=undefined && j.content.picture!="")
+      $("p").last().append("<img style='float: left;margin-left: -10px;' class='pic' src='"+j.content.picture+"'/>");
+      var desc=j.content.description;
+      var arr=desc.split("<br />");
+      var f="";
+      for(var i=0;i<arr.length;i++){
+        if(arr[i].charAt(0)==">")
+        f+="<span style='color:green;margin-left:20px;'>"+arr[i]+"</span><br/>";
+        else
+        f+="<span style='color:red;margin-left:20px;'>"+arr[i]+"</span><br/>";
+      }
+      $("p").last().append(f);
+    }
+			$(document).on("click","img",function(){
+				if($("img").hasClass("pic"))
+				$("img").removeClass("pic");
+				else
+				$("img").addClass("pic");
+			});
+		</script>
+	</body>
+</html>

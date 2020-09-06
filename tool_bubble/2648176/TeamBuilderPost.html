@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TeamBuilder 0.2</title>
+    <link href="./style.css" rel="stylesheet" />
+    <!-- load jquery -->
+    <script type="text/javascript" src="src/j.js"></script>
+</head>
+
+<body>
+    <div id="table" class="table">
+        <h3 id="subtitle">A smaller title</h3>
+        <h1 id="title">Major Title</h1>
+        <div id="rack">
+            <div id="P4" class="card card_L">
+                <img class="card_portrait" src="" alt="player4" />
+                <div class="card_nameplate">Bruiser</div>
+            </div>
+            <div id="P2" class="card card_L">
+                <img class="card_portrait" src="" alt="player2" />
+                <div class="card_nameplate">Brains</div>
+            </div>
+            <div id="P1" class="card card_C">
+                <img class="card_portrait" src="" alt="player1" />
+                <div class="card_nameplate">Leader</div>
+            </div>
+            <div id="P3" class="card card_R">
+                <img class="card_portrait" src="" alt="player3" />
+                <div class="card_nameplate">Lancer</div>
+            </div>
+            <div id="P5" class="card card_R">
+                <img class="card_portrait" src="" alt="player5" />
+                <div class="card_nameplate">Chick</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script for post
+        window.onmessage = (e)=>{
+                var json = e.data;
+                // P1, P2, P3, P4, P5, title, size, subtitle, images and names
+                $("#title").text(json.content.title);
+                $("#subtitle").text(json.content.subtitle);
+                for (var i = 1; i <= 5; i++) {
+                    var pid = "P" + i;
+                    $("#" + pid + " .card_portrait").attr("src", json.content.players[pid].img);
+                    $("#" + pid + " .card_nameplate").text(json.content.players[pid].name);
+                }
+                if (json.content.size == "3") {
+                    $("#P4").remove();
+                    $("#P5").remove();
+                    $("#P1").css("width", "33%");
+                    $("#P2").css("width", "33%");
+                    $("#P3").css("width", "33%");
+                }
+            }
+
+        // ==== DON'T ACTIVATE UNTIL CONTENT LOADING WORKS ====
+
+        // const rack = document.querySelector(".rack");
+        const cards = document.querySelectorAll(".card");
+        const images = document.querySelectorAll(".card_portrait");
+        const backgrounds = document.querySelectorAll(".card_bg");
+        const range = 40;
+
+        const calcValue = (a, b) => (a / b * range - range / 2).toFixed(1)
+
+        let timeout;
+        document.addEventListener('mousemove', ({
+            x,
+            y
+        }) => {
+            if (timeout) {
+                window.cancelAnimationFrame(timeout);
+            }
+
+            timeout = window.requestAnimationFrame(() => {
+                const yValue = calcValue(y, window.innerHeight);
+                const xValue = calcValue(x, window.innerWidth);
+
+                var rackTransFactor = 0.25;
+                var fgTransFactor = -0.25;
+                var bgTransFactor = -.45;
+
+                table.style.transform = `rotateX(${yValue*rackTransFactor}deg) rotateY(${-xValue*rackTransFactor}deg)`;
+
+                // Tilt cards.
+                // [].forEach.call(cards, (card) => {
+                //     var oldTransZVal = $(card).css('transform').match(/(\d+\.?\d+?), \d+\)/)[1];
+                //     // console.log(oldTransZVal);
+                //     card.style.transform = `rotateX(${-yValue*rackTransFactor}deg) rotateY(${xValue*rackTransFactor}deg) translateZ(${oldTransZVal}px)`;
+                //     // card.style.transform = `rotateX(${-yValue*rackTransFactor}deg) rotateY(${xValue*rackTransFactor}deg)`;
+                // });
+
+                // // Move foreground images in their cards.
+                // [].forEach.call(images, (image) => {
+                //     image.style.transform = `translateX(${xValue*fgTransFactor}px) translateY(${yValue*fgTransFactor}px)`;
+                // });
+
+                // // Move background images in their cards.
+                // [].forEach.call(backgrounds, (background) => {
+                //     background.style.backgroundPosition = `${xValue*bgTransFactor}px ${yValue*bgTransFactor}px`;
+                // })
+
+            })
+        }, false);
+    </script>
+</body>
+
+</html>

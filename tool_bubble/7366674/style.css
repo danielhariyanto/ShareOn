@@ -1,0 +1,18 @@
+body {
+	background-color: white;
+}
+
+#disp_container {
+	left: 0 auto;
+}
+
+h2 {
+	font-family: "Oswald", sans-serif;
+	font-size: 25px;
+}
+
+#left {
+}
+.block{
+	height:200px;width:200px;background: white;
+}

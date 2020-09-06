@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
+		<script type='text/javascript' src='file_upload.js'></script>
+		<style>
+			.file{
+				width:100%;height:100%;opacity: 0;position:absolute;
+			}
+			#container {
+	width: 55vw;
+	height: 40vw;
+	border: 2px rgb(200, 200, 200) dashed;
+	border-radius: 2px;
+	position: relative;
+}
+textarea {
+	width: 38vw;
+	height: 17vw;
+	resize: none;
+	color: rgb(100, 100, 100);
+	border: 1px solid rgb(200, 200, 200);
+	border-radius: 2px;
+	margin-top: 6vw;
+	font-size: 10pt;
+	position: absolute;
+	font-family: Arial;
+}
+#title {
+	width: 38vw;
+	height: 4vw;
+	border-radius: 2px;
+	border: 1px rgb(200, 200, 200) solid;
+	color: rgb(100, 100, 100);font-size: 10pt;
+	position: absolute;font-family: Arial;
+}
+#right{
+	position: absolute;right: 40vw;
+}
+.instructions {
+	margin-left: -75px;
+	margin-top: -58px;
+	font-size: 12pt;
+	color: rgb(120, 120, 120);
+	width: 150px;
+	text-align: center;
+	font-family: Arial;
+	position: absolute;
+	pointer-events: none;
+	left: 50%;
+	top: 50%;
+}
+			img{
+				position: absolute;width:100%;height: 100%;border-style: none;border-radius:5px;background: rgb(240,240,240);
+			}
+.instructions img {
+height: 50px;
+width: auto;
+display: block;
+position: relative;
+left: 50%;
+margin-left: -25px;
+}
+.instructions p{
+	display: block;position: relative;
+}
+#smallcontainer {
+	height: 46vh;
+	position: absolute;
+	width: 38vw;
+	top: 50vh;
+	border: 2px rgb(200, 200, 200) dashed;
+}
+video{
+	width: 100%;height: 100%;
+}
+		</style>
+		<script>
+			function changert(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['title']=$("input[type=text]").val().replace(/"/g,' &quot;').replace(/'/g,"&apos;");
+				$("#content").attr('content',JSON.stringify(json));
+			}
+			function changerd(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['description']=$("textarea").val().replace(/\n\r?/g, '<br />').replace(/"/g,'&quot;').replace(/'/g,"&apos;");
+				$("#content").attr('content',JSON.stringify(json));
+			}
+		</script>
+	</head>
+	<body>
+		<div id="right"><input type="text" placeholder="Enter title (optional)" value="" onchange="changert();" id='title' />
+		<textarea onchange="changerd();" placeholder='Description (optional)'></textarea><div id="smallcontainer"><input name="file" accept="image/*" class="file" type="file" /><div class="instructions"><img src="upload.png"/><p>Drag and drop a picture or click here to upload!</p></div></div></div>
+		<div id="container"><input name="file" class='file' type="file" accept="video/mp4,video/x-m4v,video/*"/><div class="instructions"><img src="upload.png"/><p>Drag and drop a video or click here to upload!</p></div></div>
+		<button id="rvid" class="btn danger">Remove video</button><button id="rpic" class="btn danger">Remove portrait</button>
+		<div id='content' content='{}' style="visibility: hidden"></div>
+		<div id='links' content='[]' style="visibility: hidden"></div>
+		<div id="portrait" style="visibility: hidden"></div>
+		<script>
+		window.onmessage = (e)=>{
+				var j=e.data;
+				$("#title").val(j.content.title);
+				$("img").attr('src',j.content.picture);
+				$("textarea").val(j.content.description);
+				var arr=[j.content.picture];
+				$("#links").attr('content',JSON.stringify(arr));
+				$("#portrait").attr('content',j.content.picture);
+				$("#content").attr('content',JSON.stringify(j.content));
+			};
+			$("#rvid").on("click",function(){
+				$("#container").empty();
+				$("#container").append('<input name="file" class="file" type="file" accept="video/mp4,video/x-m4v,video/*"/><div class="instructions"><img src="upload.png"/><p>Drag and drop a video or click here to upload!</p></div>');
+				var json=JSON.parse($("#content").attr('content'));
+				var l=JSON.parse($("#links").attr('content'));
+				var index = l.indexOf(json['video']);
+				if (index > -1) {
+				  l.splice(index, 1);
+				}
+				$("#links").attr('content',JSON.stringify(l));
+				delete json['video'];
+				$("#content").attr('content',JSON.stringify(json));
+			});
+			$("#rpic").on("click",function(){
+				$("#smallcontainer").empty();
+				$("#smallcontainer").append('<input name="file" accept="image/*" class="file" type="file" /><div class="instructions"><img src="upload.png"/><p>Drag and drop a picture or click here to upload!</p></div>');
+				var json=JSON.parse($("#content").attr('content'));
+				var l=JSON.parse($("#links").attr('content'));
+				var index = l.indexOf(json['picture']);
+				if (index > -1) {
+				  l.splice(index, 1);
+				}
+				$("#links").attr('content',JSON.stringify(l));
+				delete json['picture'];
+				$("#content").attr('content',JSON.stringify(json));
+				$("#portrait").attr('content',"");
+			});
+			$(document).on("change","#smallcontainer .file",function(){
+			$(this).attr("name","thth");
+			var file= $(this).val();
+            var exts = ['jpeg','gif','bmp','png','jpg'];
+            if ( file ) {
+                var get_ext = file.split('.');
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+									file=$(this).prop("files")[0];
+			            var fd = new FormData();
+			            fd.append("file", file);
+			            var xhr = new XMLHttpRequest();
+			            xhr.open('POST', '/writers/uploadfile.php', true);
+			            xhr.upload.onprogress = function(e) {
+			            if (e.lengthComputable) {
+			            var percentComplete = parseInt((e.loaded / e.total) * 100);
+									$("#smallcontainer").empty();
+			            $("#smallcontainer").append(percentComplete + '% uploaded');
+			            }
+			            };
+									xhr.onerror = function () {
+									  console.log("** An error occurred during the transaction");
+									};
+			            xhr.onload = function() {
+			            if (this.status == 200) {
+			              var data=this.response;
+										$("#portrait").attr("content",data);
+										var json=JSON.parse($("#content").attr('content'));
+										json['image']=data;
+										$("#content").attr('content',JSON.stringify(json));
+										$("#smallcontainer").empty();
+										console.log(json);
+										$("#smallcontainer").append("<img src='"+data+"'/>")
+										var arr=[];
+										arr.push(json['image']);
+										if(json['video']!=undefined)
+										arr.push(json['video']);
+										$("#links").attr("content",JSON.stringify(arr));
+										if(json['video']!=undefined){
+											$("#container video").attr("poster",json['image']);
+										}
+			            }
+			            };
+			            xhr.send(fd);
+                } else {
+                    $(this).val('');
+                }
+            }
+			});
+			$(document).on("change","#container .file",function(){
+					$(this).attr("name","thth");
+					var file= $(this).val();
+            if ( file ) {
+							var get_ext = file.split('.');
+							get_ext = get_ext.reverse()[0].toLowerCase();
+							file=$(this).prop("files")[0];
+							var fd = new FormData();
+							fd.append("file", file);
+							var xhr = new XMLHttpRequest();
+							xhr.open('POST', '/writers/uploadfile.php', true);
+							xhr.upload.onprogress = function(e) {
+							if (e.lengthComputable) {
+								var percentComplete = parseInt((e.loaded / e.total) * 100);
+								$("#container").empty();
+								$("#container").append(percentComplete + '% uploaded');
+							}
+							};
+							xhr.onload = function() {
+							if (this.status == 200) {
+								var data=this.response;
+								var json=JSON.parse($("#content").attr('content'));
+								json['video']=data;
+								$("#content").attr('content',JSON.stringify(json));
+                  var arr=[];
+                  arr.push(json['video']);
+									if(json['image']!=undefined)
+									arr.push(json['image']);
+                  $("#links").attr("content",JSON.stringify(arr));
+									$("#container").empty();
+									console.log(json);
+									$("#container").append('<video controls><source src="'+data+'" type="video/'+get_ext+'"></video>');
+									if(json['image']!=undefined){
+										$("#container video").attr("poster",json['image']);
+									}
+							}
+							};
+							xhr.send(fd)
+						}
+			});
+			$(document).on('submit',function(){
+				var json=JSON.parse($("#content").attr('content'));
+				if(json['picture']!="")
+					$("#trigger").attr("content",json['picture']);
+		    	$("#trigger").addClass("done");
+		   		$(document).trigger('done');
+			});
+		</script>
+	</body>
+</html>

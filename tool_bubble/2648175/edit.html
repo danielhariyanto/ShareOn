@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js"></script>
+		<script src="http://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+		<link href="dist/summernote.css" rel="stylesheet">
+		<style>
+			.note-toolbar.panel-heading{
+				background: rgb(248,248,248);
+			}
+			.note-resizebar{
+				background: rgb(248,248,248);
+			}
+			.invisible{
+				visibility:hidden;
+			}
+			#trigger{
+				position:absolute;z-index: 100000;top:0;left:0;
+			}
+		</style>
+<script src="dist/summernote.js"></script>
+<script type='text/javascript' src='file_upload.js'></script>
+	</head>
+	<body trigger="1">
+		<textarea id="editor" style="height: 200px;margin-bottom: 85px;" ></textarea>
+		<div id='content' content='{}' style="visibility: hidden"></div>
+		<div id='links' content='' style="visibility: hidden"></div>
+		<div id="trigger" class="invisible"></div>
+		<div id="portrait" class="invisible"></div>
+
+		<script src="trumbowyg/dist/trumbowyg.min.js"></script>
+		<script>
+			$(document).ready(function() {
+			  $('#editor').summernote({
+			  	maxHeight:200,
+			  	height:200,
+			  	placeholder: 'Write Here',
+			  	callbacks: {
+			    onBlur: function() {
+			    	var html=$('#editor').summernote('code');
+			    	$("#trigger").empty();
+			      $("#trigger").append(html);
+			    	html=html.replace(/"/g,'\\"');
+			    	if(html.length>30000)
+			    	html=html.substring(0,30000);
+			      $("#content").attr('content','{"text":"'+html+'"}');
+			    },
+			    onImageUpload: function(file) {
+			    	file=file[0];
+		            var exts = ['jpeg','gif','bmp','png','jpg'];
+		            if ( file ) {
+		                var get_ext = file.name.split('.');
+		                get_ext = get_ext.reverse();
+		                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+							  var fd = new FormData();
+							  fd.append("file", file);
+							  var xhr = new XMLHttpRequest();
+							  xhr.open('POST', 'http://localhost/ShareOn/writers/uploadfile.php', true);
+							  xhr.upload.onprogress = function(e) {
+							    if (e.lengthComputable) {
+							      var percentComplete = (e.loaded / e.total) * 100;
+							      console.log(percentComplete + '% uploaded');
+							    }
+							  };
+							  xhr.onload = function() {
+							    if (this.status == 200) {
+							    	$("#links").attr("content",this.response);
+							   		$('#editor').summernote('insertImage', this.response, function ($image) {
+									  $image.css('width', 100);
+									  $image.css('height', 100);
+									});
+							    };
+							  };
+							  xhr.send(fd);
+		                } else {
+		                    $(this).val('');
+		                }
+		            }
+
+			    }
+			  }
+			  });
+				var url = window.location.href;
+				url = url.split("?key=");
+				if(url.length>1){
+					url=url[1];
+					$.post("/ShareOn/geters/postload.php", { key: url }, function(d) {
+						var j=JSON.parse(d);
+						$('#editor').summernote('code', j.content.text);
+						$("#content").attr("content",JSON.stringify(j.content));
+					});
+				}else
+			  $('#editor').summernote('code', "");
+			});
+			$(document).on('submit',"body",function(){
+				$(".note-editor").remove();
+				$("#trigger").removeClass("invisible");
+					html2canvas(document.querySelector("#trigger")).then(canvas => {
+				    $("body").append(canvas);
+				    $("canvas").attr("id","canvas");
+				    var canvas=document.getElementById('canvas');
+				    var s=canvas.toDataURL('image/jpeg', 0.1);
+				    srcToFile(s, 'portrait.jpeg', 'image/jpeg').then(function(file){
+				    	var fd = new FormData();
+						  fd.append("file", file);
+						  var xhr = new XMLHttpRequest();
+						  xhr.open('POST', 'http://localhost/ShareOn/writers/uploadfile.php', true);
+						  xhr.upload.onprogress = function(e) {
+						    if (e.lengthComputable) {
+						      var percentComplete = (e.loaded / e.total) * 100;
+						      console.log(percentComplete + '% uploaded');
+						    }
+						  };
+						  xhr.onload = function() {
+						    if (this.status == 200) {
+						    	$("#links").attr("content",$("#links").attr("content")+","+this.response);
+						    	$("#trigger").addClass("done");
+						   		$("#portrait").attr("content",this.response);
+						   		$("body").trigger('done');
+						    }
+						    $("body").trigger('done');
+						    $("#trigger").remove();
+						  };
+						  xhr.send(fd);
+					});
+				});
+			});
+			function srcToFile(src, fileName, mimeType){
+			    return (fetch(src)
+			        .then(function(res){return res.arrayBuffer();})
+			        .then(function(buf){return new File([buf], fileName, {type:mimeType});})
+			    );
+			}
+			$(document).on("click",".btn-fullscreen",function(){
+				$(document).trigger('fullscreen');
+			});
+		</script>
+	</body>
+</html>

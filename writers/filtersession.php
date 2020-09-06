@@ -1,0 +1,46 @@
+<?php
+if(isset($_POST['direct']))
+require '../require.php';
+$reset=false;
+if(isset($_POST['time'])){
+$_SESSION['filters']['posts']['time']=$_POST['time'];
+$reset=true;
+}
+if(isset($_POST['points'])){
+$_SESSION['filters']['posts']['points']=$_POST['points'];
+$reset=true;
+}
+if(isset($_POST['upvotes'])){
+$_SESSION['filters']['posts']['upvotes']=$_POST['upvotes'];
+$reset=true;
+}
+if(isset($_POST['downvotes'])){
+$_SESSION['filters']['posts']['downvotes']=$_POST['downvotes'];
+$reset=true;
+}
+if(isset($_POST['comments'])){
+$_SESSION['filters']['posts']['comments']=$_POST['comments'];
+$reset=true;
+}
+if(isset($_POST['disabled_view'])){
+	$_SESSION['filters']['posts']['disabled_view']=array();
+	foreach ($_POST['disabled_view'] as $key)
+	array_push($_SESSION['filters']['posts']['disabled_view'],$key);
+}
+if(isset($_POST['order'])){
+	$_SESSION['filters']['posts']['order']=$_POST['order'];
+	$reset=true;
+}
+if(isset($_POST['out'])){
+	$_SESSION['filters']['posts']['out']=json_decode($_POST['out']);
+	$reset=true;
+}
+if(isset($_POST['exclusively'])){
+	$_SESSION['filters']['posts']['exclusively']=json_decode($_POST['exclusively']);
+	$reset=true;
+}
+if($reset){
+	$f=new triagens\ArangoDb\sessions($_SESSION['uid']);
+	$f->setFilters($_SESSION['filters']);
+}
+?>

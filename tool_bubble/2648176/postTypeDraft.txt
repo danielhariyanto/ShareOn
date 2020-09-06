@@ -1,0 +1,5 @@
+parallax effect text
+	content stuck in center of a window (image or up to 40 characters*2 lines of text)
+	background optional (greyscale/sepia/washout, 20% visibility, very slight parallax movement)
+	up to four courners of pinnable content (size options are diminutive/tiny/small) (text or image(max size 256kb png/jpg, will be scaled down if too large))
+	

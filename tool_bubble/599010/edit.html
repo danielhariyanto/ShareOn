@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<script type='text/javascript' src='file_upload.js'></script>
+		<script>
+			function changert(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['title']=$("input[type=text]").val();
+				$("#content").attr('content',JSON.stringify(json));
+			}
+			function changerd(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['description']=$("textarea").val().replace(/\n\r?/g, '<br />');
+				$("#content").attr('content',JSON.stringify(json));
+			}
+		</script>
+	</head>
+	<body>
+		<div>Title:</div><input value="" type="text" onchange="changert();"/>
+		<div>Text:</div><textarea onchange="changerd();"></textarea>
+		<div>File:</div><input type="file" id="file" name="file"/>
+		<div id='content' content='{}' style="visibility: hidden"></div>
+		<div id='links' content='' style="visibility: hidden"></div>
+		<script>
+		window.onmessage = (e)=>{
+				var j=e.data;
+				$("input").first().val(j.content.title);
+				$("textarea").val(j.content.description.replace("<br />","\n"));
+				$("#content").attr("content",JSON.stringify(j.content));
+				if(j.portrait!=undefined)
+				$("#portrait").attr("content",j.portrait);
+				if(j.content.picture!=""){
+				$("input").last().after('<div style="height: 15px;opacity: 0.8;">Image selected already. Don\'t click to keep the previous one.</div>');
+				$("#links").attr("content","["+j.content.picture+"]");
+				}
+			}
+			$("#file").on("change",function(){
+			var file= $(this).val();
+            var exts = ['jpeg','gif','bmp','png','jpg'];
+            if ( file ) {
+                var get_ext = file.split('.');
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+                    $("#file").upload('/writers/uploadfile.php',function(data){
+                    	$("#portrait").attr("content",data);
+                    	var json=JSON.parse($("#content").attr('content'));
+						json['picture']=data;
+						$("#content").attr('content',JSON.stringify(json));
+                    },$(".prog"));
+                } else {
+                    $(this).val('');
+                }
+            }
+			});
+		</script>
+	</body>
+</html>

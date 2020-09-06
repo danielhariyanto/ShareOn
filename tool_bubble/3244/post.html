@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<style>
+		body{
+			color: rgb(100,104,108); font: 400 1em/1.38 Helvetica;
+		}
+		</style>
+	</head>
+	<body>
+
+		<script>
+		window.onmessage = (e)=>{
+      var d=e.data;
+			if(d['content']['title']!=undefined)
+			$("body").append(`<p style='word-break:break-all;font-size:30pt;width:100%;text-align:center;font-weight:bold;unicode-bidi: embed;'>${d['content']['title']}</p>`);
+			if(d['content']['picture']!=undefined)
+    $("body").append(`<img style='width:600px;left:50%;margin-left:-300px;position:relative;' src='${d['content']['picture']}'/>`);
+		if(d['content']['description']!=undefined)
+		$("body").append(`<p style='width:90%;text-align:justify;font-size:14pt;margin-left:5%;position:relative;unicode-bidi: embed;'>${d['content']['description']}</p>`);
+		$("body").append("<br/>");
+    }
+		</script>
+	</body>
+</html>

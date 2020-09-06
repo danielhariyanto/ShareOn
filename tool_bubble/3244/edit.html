@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<script type='text/javascript' src='file_upload.js'></script>
+		<style>
+			#file{
+				width:100%;height:100%;opacity: 0;position:absolute;
+			}
+			#container {
+	width: 55vw;
+	height: 40vw;
+	border: 2px rgb(200, 200, 200) dashed;
+	border-radius: 2px;
+	position: relative;
+}
+textarea {
+width: 38vw;
+height: 33vw;
+resize: none;
+color: rgb(100, 100, 100);
+border: 1px solid rgb(200, 200, 200);
+border-radius: 2px;
+margin-top: 7vw;font-size: 10pt;
+position: absolute;font-family: Arial;
+}
+#title {
+	width: 38vw;
+	height: 4vw;
+	border-radius: 2px;
+	border: 1px rgb(200, 200, 200) solid;
+	color: rgb(100, 100, 100);font-size: 10pt;
+	position: absolute;font-family: Arial;
+}
+#right{
+	position: absolute;right: 40vw;
+}
+#instructions {
+margin-left: -75px;
+margin-top: -70px;
+font-size: 12pt;
+color: rgb(120, 120, 120);
+width: 150px;
+text-align: center;
+font-family: Arial;
+position: absolute;
+pointer-events: none;
+left: 50%;
+top: 50%;
+}
+			img{
+				position: absolute;width:100%;height: 100%;border-style: none;border-radius:5px;background: rgb(240,240,240);
+			}
+#instructions img {
+height: 50px;
+width: auto;
+display: block;
+position: relative;
+left: 50%;
+margin-left: -25px;
+}
+#instructions p{
+	display: block;position: relative;
+}
+		</style>
+		<script>
+			function changert(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['title']=$("input[type=text]").val().replace(/"/g,' &quot;').replace(/'/g,"&apos;");
+				$("#content").attr('content',JSON.stringify(json));
+			}
+			function changerd(){
+				var json=JSON.parse($("#content").attr('content'));
+				json['description']=$("textarea").val().replace(/\n\r?/g, '<br />').replace(/"/g,'&quot;').replace(/'/g,"&apos;");
+				$("#content").attr('content',JSON.stringify(json));
+			}
+		</script>
+	</head>
+	<body>
+		<div id="right"><input type="text" placeholder="Enter title (optional)" value="" onchange="changert();" id='title' />
+		<textarea onchange="changerd();" placeholder='Description (optional)'></textarea></div>
+		<div id="container"><img alt=" " src=""/><input name="file" id='file' type="file" /><div id="instructions"><img src="upload.png"/><p>Drag and drop a picture or click here to upload!</p></div></div>
+		<div id='content' content='{}' style="visibility: hidden"></div>
+		<div id='links' content='[]' style="visibility: hidden"></div>
+		<div id="portrait" style="visibility: hidden"></div>
+		<script>
+		window.onmessage = (e)=>{
+				var j=e.data;
+				$("#title").val(j.content.title);
+				$("#instructions").remove();
+				$("img").attr('src',j.content.picture);
+				$("textarea").val(j.content.description);
+				var arr=[j.content.picture];
+				$("#links").attr('content',JSON.stringify(arr));
+				$("#portrait").attr('content',j.content.picture);
+				$("#content").attr('content',JSON.stringify(j.content));
+			};
+			$("#file").on("change",function(){
+			$(this).attr("name","thth");
+			var file= $(this).val();
+            var exts = ['jpeg','gif','bmp','png','jpg'];
+            if ( file ) {
+                var get_ext = file.split('.');
+                get_ext = get_ext.reverse();
+                if ( $.inArray ( get_ext[0].toLowerCase(), exts ) > -1 ){
+                    $("#file").upload('/writers/uploadfile.php',function(data){
+                    	$("#portrait").attr("content",data);
+                    	var json=JSON.parse($("#content").attr('content'));
+											json['picture']=data;
+											$("#content").attr('content',JSON.stringify(json));
+                        $("img").attr("src",data);
+                        $("#instructions").remove();
+                        var arr=[];
+                        arr.push(data);
+                        $("#links").attr("content",JSON.stringify(arr));
+                    },$(".prog"));
+                } else {
+                    $(this).val('');
+                }
+            }
+			});
+			$(document).on('submit',function(){
+				var json=JSON.parse($("#content").attr('content'));
+				if(json['picture']!="")
+					$("#trigger").attr("content",json['picture']);
+		    	$("#trigger").addClass("done");
+		   		$(document).trigger('done');
+			});
+		</script>
+	</body>
+</html>

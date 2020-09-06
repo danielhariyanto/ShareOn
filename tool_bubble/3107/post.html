@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<title>index</title>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+		<script type='text/javascript' src='anchrome.js'></script>
+	</head>
+	<body>
+		<script>
+				window.onmessage = (e)=>{
+					var t=anchorme({input: e.data.content.text});
+					$("body").append("<p style='font-family:IBMPlexSans, Arial, sans-serif;text-align:justify;width:100%;'></p>");
+					$('p').html(t);
+					$("a").attr("target","_blank");
+				}
+		</script>
+	</body>
+</html>
